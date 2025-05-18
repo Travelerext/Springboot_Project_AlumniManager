@@ -5,5 +5,5 @@ import org.bson.types.ObjectId
 import org.springframework.data.mongodb.repository.MongoRepository
 
 interface ClassRepository: MongoRepository<Class, ObjectId> {
-    fun findByClassNumberAndCollegeIdAndYearsContaining(classNumber: Int?, collegeId: ObjectId?, years: Int?): List<Class>
+    fun findByClassNumberAndCollegeIdAndSpecialityIdAndYearsContaining(classNumber: Int?, collegeId: ObjectId?, specialityId: ObjectId?, years: Int?): List<Class>
 }

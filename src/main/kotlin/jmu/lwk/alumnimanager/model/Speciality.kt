@@ -11,6 +11,5 @@ data class Speciality(
     val oldCollegeId: ObjectId? = null,
     val name: String,
     val oldName: String? = null,
-    val classCount: Int = 0,
     val years: Int
 )

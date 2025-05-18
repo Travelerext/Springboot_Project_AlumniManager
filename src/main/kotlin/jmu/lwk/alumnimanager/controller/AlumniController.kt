@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
-@Controller
+@RestController
 @RequestMapping("/alumni")
 class AlumniController(
     private val userRepository: UserRepository,
@@ -94,13 +94,13 @@ class AlumniController(
         return alumni.toResponse()
     }
 
-    @GetMapping
+    @GetMapping("/real_name")
     fun getAlumniByRealName(@RequestBody realName: String): List<AlumniResponse> {
         val alumni = alumniRepository.findByRealNameContaining(realName)
         return alumni.map { it.toResponse() }
     }
 
-    @GetMapping
+    @GetMapping("/activities")
     fun getParticipatedActivities(): List<String> {
         val userId = SecurityContextHolder.getContext().authentication.principal as String
         val alumni = ObjectId(userId).getAlumni()

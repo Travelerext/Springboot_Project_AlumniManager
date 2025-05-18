@@ -11,7 +11,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
-@Controller
+@RestController
 @RequestMapping("donation")
 class DonationController(
     val alumniRepository: AlumniRepository,
@@ -63,7 +63,7 @@ class DonationController(
         val userId = SecurityContextHolder.getContext().authentication.principal as String
         val user = userRepository.findById(ObjectId(userId)).orElseThrow { IllegalStateException("账号异常") }
         if (user.role == Role.GeneralAdmin) {
-            return donationRepository.findByCheckedFalse().map { it.toResponse() }
+            return donationRepository.findByIsCheckedFalse().map { it.toResponse() }
         } else throw IllegalArgumentException("无权审核")
     }
 
@@ -98,6 +98,65 @@ class DonationController(
             )
         ).toResponse()
     }
+
+    @PutMapping("/amount/{id}")
+    fun updateAmountDonation(
+        @PathVariable id: String,
+        @RequestBody amountDonationRequest: AmountDonationRequest
+    ): DonationResponse {
+        val userId = SecurityContextHolder.getContext().authentication.principal as String
+        val user = userRepository.findById(ObjectId(userId))
+            .orElseThrow { IllegalStateException("账号异常") }
+        val donation = donationRepository.findById(ObjectId(id))
+            .orElseThrow { IllegalArgumentException("捐赠不存在") }
+        if (donation.amount == null) {
+            throw IllegalArgumentException("该捐赠记录不是金额型捐赠，不可使用金额更新方法")
+        }
+        if (user.role != Role.GeneralAdmin && donation.alumniId != user.alumniId) {
+            throw IllegalArgumentException("无权修改")
+        }
+        if (donation.isChecked) {
+            throw IllegalArgumentException("已审核捐赠不可修改")
+        }
+
+        val updatedDonation = donation.copy(
+            amount = amountDonationRequest.amount,
+            donationDate = amountDonationRequest.donationDate,
+            message = amountDonationRequest.message
+        )
+        return donationRepository.save(updatedDonation).toResponse()
+    }
+
+    @PutMapping("/items/{id}")
+    fun updateItemDonation(
+        @PathVariable id: String,
+        @RequestBody itemDonationRequest: ItemDonationRequest
+    ): DonationResponse {
+        val userId = SecurityContextHolder.getContext().authentication.principal as String
+        val user = userRepository.findById(ObjectId(userId))
+            .orElseThrow { IllegalStateException("账号异常") }
+        val donation = donationRepository.findById(ObjectId(id))
+            .orElseThrow { IllegalArgumentException("捐赠不存在") }
+        if (donation.items == null) {
+            throw IllegalArgumentException("该捐赠记录不是物品型捐赠，不可使用物品更新方法")
+        }
+        if (user.role != Role.GeneralAdmin && donation.alumniId != user.alumniId) {
+            throw IllegalArgumentException("无权修改")
+        }
+        if (donation.isChecked) {
+            throw IllegalArgumentException("已审核捐赠不可修改")
+        }
+
+        val updatedDonation = donation.copy(
+            items = itemDonationRequest.items,
+            donationDate = itemDonationRequest.donationDate,
+            message = itemDonationRequest.message
+            // amount 字段保持原值
+        )
+        return donationRepository.save(updatedDonation).toResponse()
+    }
+
+
 
     @PostMapping("/{id}")
     fun checkDonation(@RequestParam approved: Boolean, @PathVariable id: String) :DonationResponse? {

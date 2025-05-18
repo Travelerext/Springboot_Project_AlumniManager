@@ -12,7 +12,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import kotlin.jvm.optionals.getOrNull
 
-@Controller
+@RestController
 @RequestMapping("/auth")
 class AuthController(
     private val authService: AuthService,

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
-@Controller
+@RestController
 @RequestMapping("/activity")
 class ActivityController(
     val activityRepository: ActivityRepository,

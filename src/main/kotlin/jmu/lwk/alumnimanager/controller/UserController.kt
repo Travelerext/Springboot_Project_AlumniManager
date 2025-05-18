@@ -11,7 +11,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import kotlin.jvm.optionals.getOrNull
 
-@Controller
+@RestController
 @RequestMapping("/user")
 class UserController(
     private val userRepository: UserRepository,
