@@ -53,7 +53,7 @@ class ClassController(
     }
 
     @PostMapping
-    fun createClass(@RequestBody request: ClassRequest): ClassResponse {
+    fun addClass(@RequestBody request: ClassRequest): ClassResponse {
         val userId = SecurityContextHolder.getContext().authentication.principal as String
         val user = userRepository.findById(ObjectId(userId)).orElseThrow { IllegalArgumentException("账号异常") }
         if (user.role != Role.GeneralAdmin && (user.role != Role.CollegeAdmin || user.manageId != ObjectId(request.collegeId) )) throw IllegalArgumentException("权限不足")
@@ -72,9 +72,6 @@ class ClassController(
         return classRepository.save(newClass).toResponse()
     }
 
-
-
-
     @PutMapping("/{id}")
     fun updateClass(@PathVariable id: String, @RequestBody request: ClassRequest): ClassResponse {
         val userId = SecurityContextHolder.getContext().authentication.principal as String
@@ -90,8 +87,6 @@ class ClassController(
         )
         return classRepository.save(updatedClass).toResponse()
     }
-
-
 
     private fun Class.toResponse(): ClassResponse {
         return ClassResponse(

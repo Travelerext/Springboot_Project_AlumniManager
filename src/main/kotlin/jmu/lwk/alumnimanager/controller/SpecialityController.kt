@@ -1,5 +1,7 @@
 package jmu.lwk.alumnimanager.controller
 
+import jmu.lwk.alumnimanager.controller.ClassController.ClassRequest
+import jmu.lwk.alumnimanager.controller.ClassController.ClassResponse
 import jmu.lwk.alumnimanager.model.Role
 import jmu.lwk.alumnimanager.model.Speciality
 import jmu.lwk.alumnimanager.repository.SpecialityRepository
@@ -32,8 +34,20 @@ class SpecialityController(
         val years: Int
     )
 
+    @GetMapping
+    fun findSpeciality(@RequestParam collegeId: String): List<SpecialityResponse> {
+        return specialityRepository.findByCollegeId(ObjectId(collegeId))
+            .map { it.toResponse() }
+    }
+
+    @GetMapping("/{name}")
+    fun findSpecialityByName(@PathVariable name: String): List<SpecialityResponse> {
+        return specialityRepository.findByName(name)
+            .map { it.toResponse() }
+    }
+
     @PostMapping
-    fun createSpeciality(@RequestBody request: SpecialityRequest): SpecialityResponse {
+    fun addSpeciality(@RequestBody request: SpecialityRequest): SpecialityResponse {
         val userId = SecurityContextHolder.getContext().authentication.principal as String
         val user = userRepository.findById(ObjectId(userId)).orElseThrow { IllegalArgumentException("账号异常") }
         if (user.role != Role.GeneralAdmin && (user.role != Role.CollegeAdmin || user.manageId != ObjectId(request.collegeId) )) throw IllegalArgumentException("权限不足")

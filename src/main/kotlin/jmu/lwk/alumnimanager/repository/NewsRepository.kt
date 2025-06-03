@@ -10,5 +10,6 @@ interface NewsRepository: MongoRepository<News, ObjectId> {
 
     @Query("{ 'title': { \$regex: ?0, \$options: 'i' } }")
     fun findAllByTitleContaining(title: String): List<News>
+    fun findAllByLaunchId(launchId: ObjectId): List<News>
     fun findAllByOrderByWriteDateDesc(pageable: Pageable): List<News>
 }

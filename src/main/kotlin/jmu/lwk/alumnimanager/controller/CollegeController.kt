@@ -41,7 +41,7 @@ class CollegeController (
     }
 
     @PostMapping
-    fun createCollege(@RequestBody request: CollegeRequest): CollegeResponse {
+    fun addCollege(@RequestBody request: CollegeRequest): CollegeResponse {
         val userId = SecurityContextHolder.getContext().authentication.principal as String
         val user = userRepository.findById(ObjectId(userId)).orElseThrow { IllegalArgumentException("账号异常") }
         if (user.role != Role.GeneralAdmin) throw IllegalArgumentException("权限不足")

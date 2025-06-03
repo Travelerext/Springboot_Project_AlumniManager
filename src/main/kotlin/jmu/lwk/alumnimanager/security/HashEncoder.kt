@@ -1,4 +1,4 @@
-package jmu.lwk.alumnimanager.service
+package jmu.lwk.alumnimanager.security
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component

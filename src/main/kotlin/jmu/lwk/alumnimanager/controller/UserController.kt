@@ -74,6 +74,14 @@ class UserController(
         } else throw IllegalArgumentException("无权限进行授权")
     }
 
+    @GetMapping("/role")
+    fun getRole(): String? {
+        val id = SecurityContextHolder.getContext().authentication.principal as String
+        return userRepository.findById(ObjectId(id)).orElseThrow {
+            IllegalArgumentException("账号异常")
+        }.role?.name
+    }
+
     @GetMapping
     fun getUserInfo(): UserResponse {
         val operatorId = SecurityContextHolder.getContext().authentication.principal as String

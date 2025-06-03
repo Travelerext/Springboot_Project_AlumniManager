@@ -21,8 +21,7 @@ class NewsController(
     data class NewsRequest(
         val title: String,
         val content: String,
-        val author: String,
-        val launchId: ObjectId
+        val author: String
     )
 
     data class NewsResponse(
@@ -43,6 +42,15 @@ class NewsController(
         return newsRepository.findAllByTitleContaining(title).map { it.toResponse() }
     }
 
+    @GetMapping("/my")
+    fun getMyNews(): List<NewsResponse> {
+        val userId = SecurityContextHolder.getContext().authentication.principal as String
+        val user = userRepository.findById(ObjectId(userId)).orElseThrow { IllegalArgumentException("账号异常") }
+        if (user.role != null) {
+            return newsRepository.findAllByLaunchId(user.id).map { it.toResponse() }
+        } else throw IllegalArgumentException("权限不足")
+    }
+
     @PostMapping
     fun addNews(@RequestBody request: NewsRequest): NewsResponse {
         val userId = SecurityContextHolder.getContext().authentication.principal as String
@@ -59,25 +67,24 @@ class NewsController(
         } else throw IllegalArgumentException("权限不足")
     }
 
-    @PostMapping("/{id}")
+    @PutMapping("/{id}")
     fun updateNews(@PathVariable id: ObjectId, @RequestBody request: NewsRequest): NewsResponse {
         val userId = SecurityContextHolder.getContext().authentication.principal as String
         val user = userRepository.findById(ObjectId(userId)).orElseThrow { IllegalArgumentException("账号异常") }
         val news = newsRepository.findById(id).orElseThrow{ IllegalArgumentException("新闻不存在") }
         if (user.id == news.launchId) {
             return newsRepository.save(
-                News(
+                news.copy(
                     title = request.title,
                     content = request.content,
-                    author = request.author,
-                    launchId = user.id
+                    author = request.author
                 )
             ).toResponse()
         } else throw IllegalArgumentException("仅支持发布者修改")
     }
 
     @DeleteMapping("/{id}")
-    fun deleteNews(@PathVariable id: ObjectId, @RequestBody request: NewsRequest) {
+    fun deleteNews(@PathVariable id: ObjectId) {
         val userId = SecurityContextHolder.getContext().authentication.principal as String
         val user = userRepository.findById(ObjectId(userId)).orElseThrow { IllegalArgumentException("账号异常") }
         val news = newsRepository.findById(id).orElseThrow{ IllegalArgumentException("新闻不存在") }

@@ -8,7 +8,8 @@ import org.springframework.data.mongodb.repository.Query
 
 interface ActivityRepository: MongoRepository<Activity, ObjectId> {
     @Query("{ 'name': { \$regex: ?0, \$options: 'i' } }")
-    fun findByNameContaining(name: String): List<Activity>
+    fun findAllByNameContaining(name: String): List<Activity>
+    fun findAllByOrganizerId(organizerId: ObjectId): List<Activity>
     fun findByParticipantsListContains(alumniId: ObjectId): List<Activity>
     fun findAllByOrderByDateDesc(pageable: Pageable): List<Activity>
     fun findAllByOrderByParticipantsListDesc(pageable: Pageable): List<Activity>

@@ -1,4 +1,4 @@
-package jmu.lwk.alumnimanager.service
+package jmu.lwk.alumnimanager.security
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts

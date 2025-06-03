@@ -1,4 +1,4 @@
-package jmu.lwk.alumnimanager.service
+package jmu.lwk.alumnimanager.security
 
 import jakarta.servlet.DispatcherType
 import org.springframework.context.annotation.Bean

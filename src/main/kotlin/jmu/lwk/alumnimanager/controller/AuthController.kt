@@ -1,24 +1,13 @@
 package jmu.lwk.alumnimanager.controller
 
-import jmu.lwk.alumnimanager.model.Role
-import jmu.lwk.alumnimanager.model.User
-import jmu.lwk.alumnimanager.repository.AlumniAssociationRepository
-import jmu.lwk.alumnimanager.repository.CollegeRepository
-import jmu.lwk.alumnimanager.repository.UserRepository
-import jmu.lwk.alumnimanager.service.AuthService
-import org.bson.types.ObjectId
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.stereotype.Controller
+import jmu.lwk.alumnimanager.security.AuthService
 import org.springframework.web.bind.annotation.*
-import kotlin.jvm.optionals.getOrNull
 
 @RestController
+
 @RequestMapping("/auth")
 class AuthController(
-    private val authService: AuthService,
-    private val userRepository: UserRepository,
-    private val collegeRepository: CollegeRepository,
-    private val alumniAssociationRepository: AlumniAssociationRepository
+    private val authService: AuthService
 ) {
     data class AuthRequest(
         val name: String,
@@ -37,6 +26,4 @@ class AuthController(
 
     @PostMapping("/refresh")
     fun refresh(@RequestBody body: RefreshToken) = authService.refresh(body.refreshToken)
-
-
 }

@@ -8,4 +8,5 @@ import org.springframework.data.mongodb.repository.Query
 interface SpecialityRepository: MongoRepository<Speciality, ObjectId> {
     @Query("{ 'name': { \$regex: ?0, \$options: 'i' } }")
     fun findByName(name: String): List<Speciality>
+    fun findByCollegeId(collegeId: ObjectId): List<Speciality>
 }

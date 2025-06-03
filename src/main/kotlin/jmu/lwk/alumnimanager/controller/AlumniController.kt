@@ -6,7 +6,6 @@ import jmu.lwk.alumnimanager.model.Sex
 import jmu.lwk.alumnimanager.repository.*
 import org.bson.types.ObjectId
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
@@ -56,7 +55,7 @@ class AlumniController(
         val phoneNumber: String? = null,
         val email: String? = null,
         val address: String? = null,
-        val starLevel: Int,
+        val starLevel: Int
     )
 
     @GetMapping
@@ -95,19 +94,43 @@ class AlumniController(
     }
 
     @GetMapping("/real_name")
-    fun getAlumniByRealName(@RequestBody realName: String): List<AlumniResponse> {
+    fun getAlumniByRealName(@RequestParam realName: String): List<AlumniResponse> {
         val alumni = alumniRepository.findByRealNameContaining(realName)
         return alumni.map { it.toResponse() }
     }
 
-    @GetMapping("/activities")
-    fun getParticipatedActivities(): List<String> {
-        val userId = SecurityContextHolder.getContext().authentication.principal as String
-        val alumni = ObjectId(userId).getAlumni()
-        return activityRepository.findByParticipantsListContains(alumni.id).map { it.id.toHexString() }
+    @PostMapping
+    fun addAlumni(@RequestBody request: AlumniRequest): AlumniResponse {
+        val operatorId = SecurityContextHolder.getContext().authentication.principal as String
+        val user = userRepository.findById(ObjectId(operatorId)).orElseThrow { IllegalArgumentException("账号异常") }
+        if (user.role != null) {
+            return alumniRepository.save(
+                Alumni(
+                    realName = request.realName,
+                    studentId = request.studentId,
+                    sex = when (request.sex) {
+                        "男" -> Sex.MALE
+                        "女" -> Sex.FEMALE
+                        else -> null
+                    },
+                    birthday = request.birthday,
+                    collegeId = request.collegeId,
+                    classId = request.classId,
+                    specialityId = request.specialityId,
+                    alumniAssociationId = request.alumniAssociationId,
+                    admissionDate = request.admissionDate,
+                    graduationDate = request.graduationDate,
+                    industry = request.industry,
+                    workPlace = request.workPlace,
+                    phoneNumber = request.phoneNumber,
+                    email = request.email,
+                    address = request.address,
+                )
+            ).toResponse()
+        } else throw IllegalArgumentException("权限不足")
     }
 
-    @PostMapping
+    @PutMapping
     fun updateAlumni(@RequestBody request: AlumniRequest): AlumniResponse {
         val id = SecurityContextHolder.getContext().authentication.principal as String
         val alumni = ObjectId(id).getAlumni()
@@ -134,7 +157,7 @@ class AlumniController(
         ).toResponse()
     }
 
-    @PostMapping(path = ["/{id}"])
+    @PutMapping(path = ["/{id}"])
     fun updateAlumniById(@PathVariable id: String, @RequestBody request: AlumniRequest): AlumniResponse {
         val alumni = alumniRepository.findById(ObjectId(id)).orElseThrow { IllegalArgumentException("校友不存在") }
         val operatorId = SecurityContextHolder.getContext().authentication.principal as String
@@ -161,17 +184,6 @@ class AlumniController(
                     email = request.email ?: alumni.email,
                     address = request.address ?: alumni.address,
                 )
-            ).toResponse()
-        } else throw IllegalArgumentException("权限不足")
-    }
-
-    @PostMapping("/starlevel")
-    fun updateAlumniStarLevel(@RequestParam starLevel: Int, @RequestParam alumniId: String): AlumniResponse {
-        val operatorId = SecurityContextHolder.getContext().authentication.principal as String
-        val alumni = alumniRepository.findById(ObjectId(alumniId)).orElseThrow { IllegalArgumentException("校友不存在") }
-        if (ObjectId(operatorId).beAuthorized(alumni)) {
-            return alumniRepository.save(
-                alumni.copy(starLevel = starLevel)
             ).toResponse()
         } else throw IllegalArgumentException("权限不足")
     }

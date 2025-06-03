@@ -156,7 +156,18 @@ class DonationController(
         return donationRepository.save(updatedDonation).toResponse()
     }
 
-
+    @DeleteMapping("/{id}")
+    fun deleteDonation(@PathVariable id: String) {
+        val userId = SecurityContextHolder.getContext().authentication.principal as String
+        val user = userRepository.findById(ObjectId(userId)).orElseThrow { IllegalArgumentException("账号异常") }
+        val alumni = user.alumniId?.let {
+            alumniRepository.findById(it).orElseThrow { IllegalArgumentException("校友不存在") }
+        } ?: throw IllegalArgumentException("信息未完善")
+        val donation = donationRepository.findById(ObjectId(id)).orElseThrow{ IllegalArgumentException("捐赠不存在") }
+        if (alumni.id == donation.alumniId) {
+            donationRepository.delete(donation)
+        } else throw IllegalArgumentException("无权删除")
+    }
 
     @PostMapping("/{id}")
     fun checkDonation(@RequestParam approved: Boolean, @PathVariable id: String) :DonationResponse? {

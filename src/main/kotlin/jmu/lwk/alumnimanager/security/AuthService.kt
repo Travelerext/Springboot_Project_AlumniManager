@@ -1,7 +1,6 @@
-package jmu.lwk.alumnimanager.service
+package jmu.lwk.alumnimanager.security
 
 import jmu.lwk.alumnimanager.model.RefreshToken
-import jmu.lwk.alumnimanager.model.Role
 import jmu.lwk.alumnimanager.model.User
 import jmu.lwk.alumnimanager.repository.RefreshTokenRepository
 import jmu.lwk.alumnimanager.repository.UserRepository
@@ -9,6 +8,7 @@ import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException

@@ -1,4 +1,4 @@
-package jmu.lwk.alumnimanager.service
+package jmu.lwk.alumnimanager.security
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
