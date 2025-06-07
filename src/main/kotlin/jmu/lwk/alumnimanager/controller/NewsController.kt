@@ -34,7 +34,9 @@ class NewsController(
 
     @GetMapping
     fun getAllNews(@RequestParam loadedPageSize: Int): List<NewsResponse> {
-        return newsRepository.findAllByOrderByWriteDateDesc(PageRequest.of(loadedPageSize, 10)).map { it.toResponse() }
+        val response = newsRepository.findAllByOrderByWriteDateDesc(PageRequest.of(loadedPageSize/10, 10)).map { it.toResponse() }
+        println(response.size)
+        return response
     }
 
     @GetMapping("/{title}")

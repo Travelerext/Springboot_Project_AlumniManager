@@ -9,8 +9,6 @@ data class Class(
     @Id val id: ObjectId = ObjectId(),
     val classNumber: Int,
     val collegeId: ObjectId,
-    val oldCollegeId: ObjectId? = null,
     val specialityId: ObjectId,
-    val oldSpecialId: ObjectId? = null,
     val years: Int
 )

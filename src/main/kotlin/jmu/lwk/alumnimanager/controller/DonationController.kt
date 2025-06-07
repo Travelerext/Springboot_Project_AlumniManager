@@ -37,6 +37,7 @@ class DonationController(
         val items: String?= null,
         val donationDate: Instant,
         val message: String,
+        val alumniId: String,
         val isChecked: Boolean
     )
 
@@ -192,6 +193,7 @@ class DonationController(
             items = items,
             donationDate = donationDate,
             message = message,
+            alumniId = alumniId.toHexString(),
             isChecked = isChecked
         )
     }

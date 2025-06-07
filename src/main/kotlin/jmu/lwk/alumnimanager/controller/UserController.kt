@@ -28,6 +28,7 @@ class UserController(
     data class UserResponse(
         val id: String,
         val name: String,
+        val alumniId: String?,
         val roleInfo: String?
     )
 
@@ -41,7 +42,7 @@ class UserController(
             val user = userRepository.findById(ObjectId(userRequest.id)).orElseThrow{ IllegalArgumentException("用户不存在") }
             user?.let {
                 when (userRequest.role) {
-                    Role.CollegeAdmin.toString() -> {
+                    "学院负责人" -> {
                         if (userRequest.manageId != null && collegeRepository.findById(ObjectId(userRequest.manageId)).getOrNull() != null) {
                             return userRepository.save(
                                 user.copy(
@@ -51,7 +52,7 @@ class UserController(
                             ).toResponse()
                         } else throw IllegalArgumentException("授权失败")
                     }
-                    Role.AssociationAdmin.toString() -> {
+                    "校友分会负责人" -> {
                         if (userRequest.manageId != null && alumniAssociationRepository.findById(ObjectId(userRequest.manageId)).getOrNull() != null) {
                             return userRepository.save(
                                 user.copy(
@@ -61,14 +62,23 @@ class UserController(
                             ).toResponse()
                         } else throw IllegalArgumentException("授权失败")
                     }
-                    else -> {
+                    "校领导" -> {
                         return userRepository.save(
                             user.copy(
-                                role = Role.valueOf(userRequest.role),
+                                role = Role.HeadMaster,
                                 manageId = ObjectId(userRequest.id)
                             )
                         ).toResponse()
                     }
+                    "校友总会工作人员" -> {
+                        return userRepository.save(
+                            user.copy(
+                                role = Role.GeneralAdmin,
+                                manageId = ObjectId(userRequest.id)
+                            )
+                        ).toResponse()
+                    }
+                    else -> throw IllegalArgumentException("授权失败")
                 }
             } ?: throw IllegalArgumentException("账号异常")
         } else throw IllegalArgumentException("无权限进行授权")
@@ -109,7 +119,7 @@ class UserController(
         val operatorId = SecurityContextHolder.getContext().authentication.principal as String
         val operator = userRepository.findById(ObjectId(operatorId)).orElseThrow { IllegalArgumentException("账号异常") }
         if (operator.role == Role.GeneralAdmin)
-            userRepository.deleteById(ObjectId(operatorId))
+            userRepository.deleteById(ObjectId(id))
         else throw IllegalArgumentException("权限不足")
     }
 
@@ -130,6 +140,7 @@ class UserController(
         return UserResponse(
             id = id.toHexString(),
             name = name,
+            alumniId = alumniId?.toHexString(),
             roleInfo = roleInfo
         )
     }

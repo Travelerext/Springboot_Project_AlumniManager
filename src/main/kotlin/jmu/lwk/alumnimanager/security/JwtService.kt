@@ -10,7 +10,7 @@ import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 @Service
-class JwtService(@Value("\${jwt.secret}") private val secret: String) {
+class   JwtService(@Value("\${jwt.secret}") private val secret: String) {
 
     private val secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret))
     private val accessTokenValidityMs = 15L * 60L * 1000L

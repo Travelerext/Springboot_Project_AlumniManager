@@ -8,7 +8,6 @@ import jmu.lwk.alumnimanager.repository.UnconfirmedRepository
 import jmu.lwk.alumnimanager.repository.UserRepository
 import org.bson.types.ObjectId
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.stereotype.Controller
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 
@@ -25,7 +24,7 @@ class InitController(
     )
 
     data class UnconfirmedAlumniResponse(
-        val id: ObjectId,
+        val id: String,
         val realName: String,
         val studentId: String
     )
@@ -88,7 +87,7 @@ class InitController(
         if (user.role != Role.GeneralAdmin) throw IllegalArgumentException("权限不足")
         return unconfirmedRepository.findAll().map {
             UnconfirmedAlumniResponse(
-                id = it.id,
+                id = it.id.toHexString(),
                 realName = it.realName,
                 studentId = it.studentId
             )

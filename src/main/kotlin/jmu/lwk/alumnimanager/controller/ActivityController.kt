@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
+import kotlin.jvm.optionals.getOrNull
 
 @RestController
 @RequestMapping("/activity")
@@ -87,8 +88,8 @@ class ActivityController(
         } else throw IllegalArgumentException("权限不足")
     }
 
-    @PostMapping("/joined")
-    fun hasJoinedActivity(@RequestBody activity: ActivityRequest): List<ActivityResponse> {
+    @GetMapping("/joined")
+    fun hasJoinedActivity(): List<ActivityResponse> {
         val operatorId = SecurityContextHolder.getContext().authentication.principal as String
         val user = userRepository.findById(ObjectId(operatorId)).orElseThrow { IllegalArgumentException("用户不存在") }
         val alumniId = user.alumniId?.let { alumniRepository.findById(it).orElseThrow{ IllegalArgumentException("校友不存在") }.id }
@@ -115,27 +116,31 @@ class ActivityController(
     }
 
     @PutMapping(path = ["/join"])
-    fun joinActivity(@RequestParam activityId: String): ActivityResponse {
+    fun joinActivity(@RequestParam activityId: String) {
         val operatorId = SecurityContextHolder.getContext().authentication.principal as String
         val user = userRepository.findById(ObjectId(operatorId)).orElseThrow { IllegalArgumentException("用户不存在") }
         val alumniId = user.alumniId?.let { alumniRepository.findById(it).orElseThrow{ IllegalArgumentException("校友不存在") }.id }
             ?: throw IllegalArgumentException("未完善校友信息")
         val activity = activityRepository.findById(ObjectId(activityId)).orElseThrow { IllegalArgumentException("活动不存在") }
-        return activity.copy(
-            participantsList = activity.participantsList + alumniId
-        ).toResponse()
+        activityRepository.save(
+            activity.copy(
+                participantsList = activity.participantsList + alumniId
+            )
+        )
     }
 
     @PutMapping(path = ["/quit"])
-    fun quitActivity(@RequestParam activityId: String): ActivityResponse {
+    fun quitActivity(@RequestParam activityId: String) {
         val operatorId = SecurityContextHolder.getContext().authentication.principal as String
         val user = userRepository.findById(ObjectId(operatorId)).orElseThrow { IllegalArgumentException("用户不存在") }
         val alumniId = user.alumniId?.let { alumniRepository.findById(it).orElseThrow{ IllegalArgumentException("校友不存在") }.id }
             ?: throw IllegalArgumentException("未完善校友信息")
         val activity = activityRepository.findById(ObjectId(activityId)).orElseThrow { IllegalArgumentException("活动不存在") }
-        return activity.copy(
-            participantsList = activity.participantsList - alumniId
-        ).toResponse()
+        activityRepository.save(
+            activity.copy(
+                participantsList = activity.participantsList - alumniId
+            )
+        )
     }
 
     @DeleteMapping(path = ["/{id}"])
@@ -148,18 +153,16 @@ class ActivityController(
             operator.role == Role.GeneralAdmin ||
             operator.manageId == organizer.manageId
         ) {
-            activityRepository.deleteById(ObjectId(operatorId))
+            activityRepository.deleteById(ObjectId(id))
         } else throw IllegalArgumentException("无权删除")
     }
 
     private fun Activity.toResponse(): ActivityResponse {
-        val organizerName = userRepository.findById(organizerId).orElseThrow {
-            IllegalArgumentException("账号异常")
-        }.name
+        val organizerName = userRepository.findById(organizerId).getOrNull()?.name
         return ActivityResponse(
             activityId = id.toHexString(),
             activityName = name,
-            organizerName = organizerName,
+            organizerName = organizerName?: "",
             address = address,
             date = date,
             content = content,

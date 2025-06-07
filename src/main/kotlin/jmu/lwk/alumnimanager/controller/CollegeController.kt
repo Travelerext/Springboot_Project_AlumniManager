@@ -29,6 +29,11 @@ class CollegeController (
         val years: Int
     )
 
+    @GetMapping("/all")
+    fun getAllCollege(): List<CollegeResponse> {
+        return collegeRepository.findAll().map { it.toResponse() }
+    }
+
     @GetMapping
     fun findCollege(@RequestParam name: String): List<CollegeResponse> {
         return collegeRepository.findByNameContaining(name).map { it.toResponse() }
@@ -73,8 +78,6 @@ class CollegeController (
             )
         ).toResponse()
     }
-
-
 
     private fun College.toResponse(): CollegeResponse {
         return CollegeResponse(

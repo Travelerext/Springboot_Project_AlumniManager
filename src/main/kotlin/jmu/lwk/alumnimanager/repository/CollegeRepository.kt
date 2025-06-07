@@ -8,5 +8,4 @@ import org.springframework.data.mongodb.repository.Query
 interface CollegeRepository: MongoRepository<College, ObjectId> {
     @Query("{ 'name': { \$regex: ?0, \$options: 'i' } }")
     fun findByNameContaining(name: String): List<College>
-    fun name(name: String): MutableList<College>
 }

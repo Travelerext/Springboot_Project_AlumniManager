@@ -37,12 +37,10 @@ class ClassController(
     )
 
     @GetMapping
-    fun findClasses(@RequestBody request: ClassRequest): List<ClassResponse> {
-        return classRepository.findByClassNumberAndCollegeIdAndSpecialityIdAndYearsContaining(
-            request.classNumber,
-            ObjectId(request.collegeId),
-            ObjectId(request.specialityId),
-            request.years
+    fun findClasses(@RequestParam collegeId: String, @RequestParam specialityId: String): List<ClassResponse> {
+        return classRepository.findByCollegeIdAndSpecialityId(
+            ObjectId(collegeId),
+            ObjectId(specialityId)
         ).map { it.toResponse() }
     }
 

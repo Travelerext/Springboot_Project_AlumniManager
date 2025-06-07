@@ -13,22 +13,17 @@ import java.time.Instant
 @RequestMapping("/alumni")
 class AlumniController(
     private val userRepository: UserRepository,
-    private val alumniRepository: AlumniRepository,
-    private val classRepository: ClassRepository,
-    private val collegeRepository: CollegeRepository,
-    private val specialityRepository: SpecialityRepository,
-    private val alumniAssociationRepository: AlumniAssociationRepository,
-    private val activityRepository: ActivityRepository
+    private val alumniRepository: AlumniRepository
 ) {
     data class AlumniRequest(
-        val studentId: String,
-        val realName: String,
+        val studentId: String?,
+        val realName: String?,
         val sex: String? = null,
         val birthday: Instant? = null,
-        val collegeId: ObjectId? = null,
-        val classId: ObjectId? = null,
-        val specialityId: ObjectId? = null,
-        val alumniAssociationId: ObjectId? = null,
+        val collegeId: String? = null,
+        val classId: String? = null,
+        val specialityId: String? = null,
+        val alumniAssociationId: String? = null,
         val admissionDate: Instant? = null,
         val graduationDate: Instant? = null,
         val industry: String? = null,
@@ -44,10 +39,10 @@ class AlumniController(
         val realName: String? = null,
         val sex: String? = null,
         val birthday: Instant? = null,
-        val collegeName: String? = null,
-        val className: String? = null,
-        val specialityName: String? = null,
-        val alumniAssociationName: String? = null,
+        val collegeId: String? = null,
+        val classId: String? = null,
+        val specialityId: String? = null,
+        val alumniAssociationId: String? = null,
         val admissionDate: Instant? = null,
         val graduationDate: Instant? = null,
         val industry: String? = null,
@@ -83,7 +78,7 @@ class AlumniController(
             IllegalArgumentException("账号异常")
         }
         return if (user.role == Role.HeadMaster) {
-            alumniRepository.findByStarLevelBetween(4, 5).map { it.toResponse() }
+            alumniRepository.findByStarLevelBetween(3, 6).map { it.toResponse() }
         } else emptyList()
     }
 
@@ -114,10 +109,10 @@ class AlumniController(
                         else -> null
                     },
                     birthday = request.birthday,
-                    collegeId = request.collegeId,
-                    classId = request.classId,
-                    specialityId = request.specialityId,
-                    alumniAssociationId = request.alumniAssociationId,
+                    collegeId = request.collegeId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) },
+                    classId = request.classId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) },
+                    specialityId = request.specialityId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) },
+                    alumniAssociationId = request.alumniAssociationId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) },
                     admissionDate = request.admissionDate,
                     graduationDate = request.graduationDate,
                     industry = request.industry,
@@ -142,10 +137,10 @@ class AlumniController(
                     else -> alumni.sex
                 },
                 birthday = request.birthday ?: alumni.birthday,
-                collegeId = request.collegeId ?: alumni.collegeId,
-                classId = request.classId ?: alumni.classId,
-                specialityId = request.specialityId ?: alumni.specialityId,
-                alumniAssociationId = request.alumniAssociationId,
+                collegeId = request.collegeId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) } ?: alumni.collegeId,
+                classId = request.classId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) } ?: alumni.classId,
+                specialityId = request.specialityId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) } ?: alumni.specialityId,
+                alumniAssociationId = request.alumniAssociationId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) } ?: alumni.alumniAssociationId,
                 admissionDate = request.admissionDate ?: alumni.admissionDate,
                 graduationDate = request.graduationDate ?: alumni.graduationDate,
                 industry = request.industry ?: alumni.industry,
@@ -172,10 +167,10 @@ class AlumniController(
                         else -> alumni.sex
                     },
                     birthday = request.birthday ?: alumni.birthday,
-                    collegeId = request.collegeId ?: alumni.collegeId,
-                    classId = request.classId ?: alumni.classId,
-                    specialityId = request.specialityId ?: alumni.specialityId,
-                    alumniAssociationId = request.alumniAssociationId,
+                    collegeId = request.collegeId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) } ?: alumni.collegeId,
+                    classId = request.classId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) } ?: alumni.classId,
+                    specialityId = request.specialityId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) } ?: alumni.specialityId,
+                    alumniAssociationId = request.alumniAssociationId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) },
                     admissionDate = request.admissionDate ?: alumni.admissionDate,
                     graduationDate = request.graduationDate ?: alumni.graduationDate,
                     industry = request.industry ?: alumni.industry,
@@ -205,23 +200,16 @@ class AlumniController(
     }
 
     private fun Alumni.toResponse(): AlumniResponse {
-        val collegeName = collegeId?.let { collegeRepository.findById(it).orElse(null)?.name }
-        val classNumber = classId?.let { classRepository.findById(it).orElse(null)?.classNumber }
-        val classYears = classId?.let { classRepository.findById(it).orElse(null)?.years }
-        val specialityName = specialityId?.let { specialityRepository.findById(it).orElse(null)?.name }
-        val alumniAssociationName = alumniAssociationId?.let { alumniAssociationRepository.findById(it).orElse(null)?.name }
         return AlumniResponse(
             id = id.toHexString(),
             studentId = studentId,
             realName = realName,
             sex = sex?.name,
             birthday = birthday,
-            collegeName = collegeName,
-            specialityName = specialityName,
-            className = if (classYears != null && collegeName != null && specialityName != null && classNumber != null)
-                "$classYears $collegeName $specialityName $classNumber"
-            else null,
-            alumniAssociationName = alumniAssociationName,
+            collegeId = collegeId?.toHexString(),
+            specialityId = specialityId?.toHexString(),
+            classId = classId?.toHexString(),
+            alumniAssociationId = alumniAssociationId?.toHexString(),
             admissionDate = admissionDate,
             graduationDate = graduationDate,
             industry = industry,

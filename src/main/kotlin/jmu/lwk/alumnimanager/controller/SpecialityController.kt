@@ -9,9 +9,10 @@ import jmu.lwk.alumnimanager.repository.UserRepository
 import org.bson.types.ObjectId
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RestController
-@RequestMapping("/specialities")
+@RequestMapping("/speciality")
 class SpecialityController(
     private val specialityRepository: SpecialityRepository,
     private val userRepository: UserRepository,
@@ -34,15 +35,25 @@ class SpecialityController(
         val years: Int
     )
 
+    @GetMapping("/all")
+    fun getAllSpecialities(): List<SpecialityResponse> {
+        return specialityRepository.findAll().map { it.toResponse() }
+    }
+
     @GetMapping
     fun findSpeciality(@RequestParam collegeId: String): List<SpecialityResponse> {
         return specialityRepository.findByCollegeId(ObjectId(collegeId))
             .map { it.toResponse() }
     }
 
-    @GetMapping("/{name}")
-    fun findSpecialityByName(@PathVariable name: String): List<SpecialityResponse> {
-        return specialityRepository.findByName(name)
+    @GetMapping("/{id}")
+    fun getSpeciality(@PathVariable id: ObjectId): SpecialityResponse {
+        return specialityRepository.findById(id).orElseThrow { IllegalArgumentException("专业不存在") }.toResponse()
+    }
+
+    @GetMapping("/founder")
+    fun findSpecialityByName(@RequestParam name: String): List<SpecialityResponse> {
+        return specialityRepository.findByNameContaining(name)
             .map { it.toResponse() }
     }
 
@@ -51,9 +62,10 @@ class SpecialityController(
         val userId = SecurityContextHolder.getContext().authentication.principal as String
         val user = userRepository.findById(ObjectId(userId)).orElseThrow { IllegalArgumentException("账号异常") }
         if (user.role != Role.GeneralAdmin && (user.role != Role.CollegeAdmin || user.manageId != ObjectId(request.collegeId) )) throw IllegalArgumentException("权限不足")
+        println("collegeId: $request.collegeId")
         val speciality = Speciality(
             collegeId = ObjectId(request.collegeId),
-            oldCollegeId = request.oldCollegeId?.let { ObjectId(it) },
+            oldCollegeId = request.oldCollegeId.takeIf { it?.isNotEmpty()?: false }?.let { ObjectId(it) },
             name = request.name,
             oldName = request.oldName,
             years = request.years
